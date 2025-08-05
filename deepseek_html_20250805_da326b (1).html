@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Caminho da Palavra - Jogo Bíblico</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-earth-dark: #3e2723;
+            --color-earth-medium: #5d4037;
+            --color-earth-light: #8d6e63;
+            --color-earth-extra-light: #d7ccc8;
+            --color-gold: #c9b037;
+            --color-gold-light: #e6d58e;
+            --color-silver: #c0c0c0;
+            --color-bronze: #cd7f32;
+            --color-text: #f5f5f5;
+            --color-text-dark: #212121;
+            --color-success: #4caf50;
+            --color-error: #f44336;
+            --color-bg: #1e130c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', serif;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="100%" height="100%" fill="%231e130c"/><path d="M0,0 Q100,50 200,0 T200,200 Q100,150 0,200 T0,0 Z" fill="%233e2723" opacity="0.2"/></svg>');
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            min-height: 90vh;
+            background: linear-gradient(to bottom, var(--color-earth-medium), var(--color-earth-dark));
+            border: 8px double var(--color-gold);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .corner-decoration {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,20 C80,30 70,50 50,50 C30,50 20,30 0,20 Z" fill="%23c9b037" opacity="0.7"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+
+        .top-left { top: 0; left: 0; transform: rotate(0); }
+        .top-right { top: 0; right: 0; transform: rotate(90deg); }
+        .bottom-left { bottom: 0; left: 0; transform: rotate(270deg); }
+        .bottom-right { bottom: 0; right: 0; transform: rotate(180deg); }
+
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 800 600"><rect width="100%" height="100%" fill="%235d4037"/><path d="M0,0 Q400,100 800,0 L800,600 Q400,500 0,600 Z" fill="%233e2723" opacity="0.3"/></svg>');
+            background-size: cover;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+            animation: pulse 2s infinite alternate;
+        }
+
+        .logo h1 {
+            font-size: 3.5rem;
+            color: var(--color-gold-light);
+            text-shadow: 3px 3px 0 var(--color-earth-dark);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            font-family: 'Garamond', serif;
+        }
+
+        .logo p {
+            font-size: 1.2rem;
+            color: var(--color-earth-extra-light);
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, var(--color-gold-light), var(--color-gold));
+            color: var(--color-earth-dark);
+            border: none;
+            padding: 15px 35px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px;
+            width: 250px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--color-gold);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20px;
+            height: 200%;
+            background: rgba(255,255,255,0.3);
+            transform: rotate(30deg);
+            transition: all 0.6s;
+        }
+
+        .btn:hover::after {
+            left: 120%;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to bottom, var(--color-earth-extra-light), var(--color-earth-light));
+            color: var(--color-text-dark);
+        }
+
+        .game-screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(62, 39, 35, 0.7);
+            border-radius: 8px;
+            border: 2px solid var(--color-gold);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .player-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            border: 3px solid var(--color-gold-light);
+        }
+
+        .player-stats {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-gold-light);
+        }
+
+        .level {
+            font-size: 1rem;
+            color: var(--color-earth-extra-light);
+        }
+
+        .map-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--color-gold-light);
+            text-shadow: 2px 2px 0 var(--color-earth-dark);
+            margin: 10px 0 30px;
+            font-family: 'Garamond', serif;
+        }
+
+        .map-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .map-path {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 85%;
+            width: 15px;
+            background: linear-gradient(to bottom, var(--color-gold), var(--color-gold-light), var(--color-gold));
+            z-index: 1;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(201, 176, 55, 0.5);
+        }
+
+        .map-location {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 400px;
+            padding: 15px 20px;
+            background: linear-gradient(to right, var(--color-earth-light), var(--color-earth-medium));
+            border-radius: 10px;
+            border: 3px solid var(--color-gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .map-location:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .map-location.active {
+            background: linear-gradient(to right, var(--color-gold), var(--color-gold-light));
+            color: var(--color-earth-dark);
+            font-weight: bold;
+        }
+
+        .map-location.completed::before {
+            content: '✓';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: var(--color-success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        .location-icon {
+            margin-right: 15px;
+            font-size: 1.8rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .location-info {
+            flex-grow: 1;
+        }
+
+        .location-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .location-desc {
+            font-size: 0.9rem;
+            color: var(--color-earth-extra-light);
+        }
+
+        .question-container {
+            flex-grow: 1;
+            background: rgba(141, 110, 99, 0.7);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid var(--color-gold);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: var(--color-gold-light);
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px;
+            background: rgba(62, 39, 35, 0.8);
+            border: 2px solid var(--color-earth-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            background: rgba(93, 64, 55, 0.8);
+            border-color: var(--color-gold);
+        }
+
+        .option.selected {
+            background: rgba(201, 176, 55, 0.3);
+            border-color: var(--color-gold);
+        }
+
+        .option.correct {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: var(--color-success);
+        }
+
+        .option.incorrect {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: var(--color-error);
+        }
+
+        .option-letter {
+            width: 30px;
+            height: 30px;
+            background: var(--color-gold);
+            color: var(--color-earth-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .bible-reference {
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+            color: var(--color-gold-light);
+            padding: 10px;
+            background: rgba(62, 39, 35, 0.5);
+            border-radius: 5px;
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6rem;
+            background: rgba(0,0,0,0.7);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .feedback-overlay.correct {
+            color: var(--color-success);
+        }
+
+        .feedback-overlay.incorrect {
+            color: var(--color-error);
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .medal {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            font-size: 4rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 5px solid;
+            position: relative;
+        }
+
+        .medal.gold {
+            background: radial-gradient(circle at 30% 30%, var(--color-gold-light), var(--color-gold));
+            border-color: var(--color-gold);
+            color: #fff;
+        }
+
+        .medal.silver {
+            background: radial-gradient(circle at 30% 30%, #e6e6e6, #c0c0c0);
+            border-color: #a0a0a0;
+            color: #606060;
+        }
+
+        .medal.bronze {
+            background: radial-gradient(circle at 30% 30%, #e6a257, #cd7f32);
+            border-color: #a05a2c;
+            color: #fff;
+        }
+
+        .results-title {
+            font-size: 2.5rem;
+            color: var(--color-gold-light);
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            font-size: 2rem;
+            color: var(--color-earth-extra-light);
+            margin: 15px 0;
+        }
+
+        .score-display span {
+            color: var(--color-gold-light);
+            font-weight: bold;
+        }
+
+        .motivational-verse {
+            font-style: italic;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(62, 39, 35, 0.7);
+            border-left: 4px solid var(--color-gold);
+            border-radius: 0 8px 8px 0;
+            max-width: 600px;
+        }
+
+        .verse-text {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .verse-reference {
+            color: var(--color-gold-light);
+        }
+
+        .ranking-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--color-gold-light);
+            margin: 20px 0 30px;
+        }
+
+        .ranking-table {
+            background: rgba(62, 39, 35, 0.7);
+            border-radius: 8px;
+            border: 2px solid var(--color-gold);
+            overflow: hidden;
+        }
+
+        .ranking-header {
+            display: grid;
+            grid-template-columns: 50px 1fr 100px;
+            background: var(--color-earth-medium);
+            padding: 15px;
+            font-weight: bold;
+            border-bottom: 2px solid var(--color-gold);
+        }
+
+        .ranking-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 100px;
+            padding: 15px;
+            border-bottom: 1px solid var(--color-earth-light);
+        }
+
+        .ranking-row:last-child {
+            border-bottom: none;
+        }
+
+        .ranking-row.player-row {
+            background: rgba(201, 176, 55, 0.2);
+        }
+
+        .rank {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .rank-1 { color: var(--color-gold); }
+        .rank-2 { color: var(--color-silver); }
+        .rank-3 { color: var(--color-bronze); }
+
+        .player-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-score {
+            text-align: right;
+            font-weight: bold;
+            color: var(--color-gold-light);
+        }
+
+        .audio-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+            border: 2px solid var(--color-gold);
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(201, 176, 55, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(201, 176, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(201, 176, 55, 0); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s;
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 1.5s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                min-height: 95vh;
+            }
+            
+            .logo h1 {
+                font-size: 2.5rem;
+            }
+            
+            .btn {
+                width: 200px;
+                padding: 12px 25px;
+                font-size: 1.1rem;
+            }
+            
+            .map-location {
+                width: 90%;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 2rem;
+            }
+            
+            .map-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .progress-container {
+                margin: 10px 0;
+            }
+            
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .ranking-header, .ranking-row {
+                grid-template-columns: 30px 1fr 70px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="corner-decoration top-left"></div>
+        <div class="corner-decoration top-right"></div>
+        <div class="corner-decoration bottom-left"></div>
+        <div class="corner-decoration bottom-right"></div>
+        
+        <div class="audio-control" id="audio-btn">
+            <i class="fas fa-volume-up"></i>
+        </div>
+        
+        <!-- Tela de Início -->
+        <div id="start-screen">
+            <div class="logo">
+                <h1>O CAMINHO DA PALAVRA</h1>
+                <p>Uma jornada pela sabedoria bíblica</p>
+            </div>
+            <button class="btn pulse-glow" id="play-btn">Jogar</button>
+            <button class="btn btn-secondary" id="ranking-btn">Ver Ranking</button>
+        </div>
+        
+        <!-- Mapa de Progressão -->
+        <div id="map-screen" class="game-screen">
+            <div class="map-header">
+                <div class="player-info">
+                    <div class="player-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="player-stats">
+                        <div class="score">Pontuação: <span id="player-score">1.200</span></div>
+                        <div class="level">Nível: <span id="player-level">3</span></div>
+                    </div>
+                </div>
+                <button class="btn" id="achievements-btn">Conquistas</button>
+            </div>
+            
+            <h2 class="map-title">Seu Caminho Espiritual</h2>
+            
+            <div class="map-container">
+                <div class="map-path"></div>
+                
+                <div class="map-location completed">
+                    <div class="location-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="location-info">
+                        <div class="location-name">Vale do Início</div>
+                        <div class="location-desc">Fundamentos da fé</div>
+                    </div>
+                </div>
+                
+                <div class="map-location completed">
+                    <div class="location-icon">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <div class="location-info">
+                        <div class="location-name">Floresta do Discernimento</div>
+                        <div class="location-desc">Sabedoria e entendimento</div>
+                    </div>
+                </div>
+                
+                <div class="map-location active">
+                    <div class="location-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <div class="location-info">
+                        <div class="location-name">Deserto da Fé</div>
+                        <div class="location-desc">Provas e perseverança</div>
+                    </div>
+                </div>
+                
+                <div class="map-location">
+                    <div class="location-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="location-info">
+                        <div class="location-name">Montanha da Revelação</div>
+                        <div class="location-desc">Visão celestial</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tela de Quiz -->
+        <div id="quiz-screen" class="game-screen">
+            <div class="quiz-header">
+                <div class="player-info">
+                    <div class="player-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="player-stats">
+                        <div class="score">Pontuação: <span id="quiz-score">850</span></div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar" style="width: 40%;"></div>
+                </div>
+                
+                <div class="question-count" id="question-count">4/10</div>
+            </div>
+            
+            <div class="question-container">
+                <div class="question-header">
+                    <div class="level-info" id="level-info">Deserto da Fé - Questão 4</div>
+                    <div class="difficulty">Dificuldade: Média</div>
+                </div>
+                
+                <div class="question-text" id="question-text">
+                    Quantos discípulos Jesus enviou de dois em dois antes de Sua ascensão?
+                </div>
+                
+                <div class="options-container" id="options-container">
+                    <div class="option">
+                        <div class="option-letter">A</div>
+                        <div class="option-text">12 discípulos</div>
+                    </div>
+                    <div class="option">
+                        <div class="option-letter">B</div>
+                        <div class="option-text">70 discípulos</div>
+                    </div>
+                    <div class="option">
+                        <div class="option-letter">C</div>
+                        <div class="option-text">7 discípulos</div>
+                    </div>
+                    <div class="option">
+                        <div class="option-letter">D</div>
+                        <div class="option-text">40 discípulos</div>
+                    </div>
+                </div>
+                
+                <div class="bible-reference" id="bible-reference">
+                    "Depois disso o Senhor designou outros setenta, e os enviou de dois em dois..."
+                    <br><strong>Lucas 10:1</strong>
+                </div>
+                
+                <div class="feedback-overlay" id="feedback-overlay">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+            
+            <div class="quiz-controls">
+                <button class="btn btn-secondary" id="back-btn">Voltar</button>
+                <button class="btn" id="submit-btn" disabled>Confirmar Resposta</button>
+            </div>
+        </div>
+        
+        <!-- Tela de Resultados -->
+        <div id="results-screen" class="game-screen">
+            <div class="medal silver" id="result-medal">
+                <i class="fas fa-medal"></i>
+            </div>
+            
+            <h2 class="results-title" id="result-title">Fase Concluída!</h2>
+            
+            <div class="score-display">
+                Pontuação: <span id="result-score">850</span> pontos
+            </div>
+            
+            <div class="score-display">
+                Acertos: <span id="result-correct">8</span>/<span id="result-total">10</span> questões
+            </div>
+            
+            <div class="motivational-verse">
+                <div class="verse-text" id="verse-text">
+                    "Bem-aventurado o homem que suporta a provação; porque, depois de aprovado, receberá a coroa da vida, que o Senhor prometeu aos que o amam."
+                </div>
+                <div class="verse-reference" id="verse-reference">Tiago 1:12</div>
+            </div>
+            
+            <button class="btn" id="continue-btn">Continuar Jornada</button>
+        </div>
+        
+        <!-- Tela de Ranking -->
+        <div id="ranking-screen" class="game-screen">
+            <div class="map-header">
+                <button class="btn btn-secondary" id="back-to-map">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <h2 class="ranking-title">Ranking dos Peregrinos</h2>
+                <div></div>
+            </div>
+            
+            <div class="ranking-table">
+                <div class="ranking-header">
+                    <div>Posição</div>
+                    <div>Peregrino</div>
+                    <div>Pontuação</div>
+                </div>
+                
+                <div class="ranking-row">
+                    <div class="rank rank-1">1</div>
+                    <div class="player-name">
+                        <i class="fas fa-crown" style="color: var(--color-gold);"></i>
+                        Ana Santos
+                    </div>
+                    <div class="player-score">2.850</div>
+                </div>
+                
+                <div class="ranking-row">
+                    <div class="rank rank-2">2</div>
+                    <div class="player-name">
+                        <i class="fas fa-crown" style="color: var(--color-silver);"></i>
+                        Pedro Almeida
+                    </div>
+                    <div class="player-score">2.400</div>
+                </div>
+                
+                <div class="ranking-row">
+                    <div class="rank rank-3">3</div>
+                    <div class="player-name">
+                        <i class="fas fa-crown" style="color: var(--color-bronze);"></i>
+                        Maria Oliveira
+                    </div>
+                    <div class="player-score">2.150</div>
+                </div>
+                
+                <div class="ranking-row">
+                    <div class="rank">4</div>
+                    <div class="player-name">Carlos Mendes</div>
+                    <div class="player-score">1.950</div>
+                </div>
+                
+                <div class="ranking-row">
+                    <div class="rank">5</div>
+                    <div class="player-name">João Pereira</div>
+                    <div class="player-score">1.750</div>
+                </div>
+                
+                <div class="ranking-row player-row">
+                    <div class="rank">6</div>
+                    <div class="player-name">
+                        <i class="fas fa-user"></i> Você
+                    </div>
+                    <div class="player-score">1.200</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="correct-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-musical-reveal-961.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="wrong-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-ominous-drums-227.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="level-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Elementos da interface
+        const startScreen = document.getElementById('start-screen');
+        const mapScreen = document.getElementById('map-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const rankingScreen = document.getElementById('ranking-screen');
+        const audioBtn = document.getElementById('audio-btn');
+        
+        // Elementos do quiz
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const bibleReference = document.getElementById('bible-reference');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCount = document.getElementById('question-count');
+        const levelInfo = document.getElementById('level-info');
+        const submitBtn = document.getElementById('submit-btn');
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const quizScore = document.getElementById('quiz-score');
+        
+        // Elementos de resultado
+        const resultScore = document.getElementById('result-score');
+        const resultCorrect = document.getElementById('result-correct');
+        const resultTotal = document.getElementById('result-total');
+        const resultTitle = document.getElementById('result-title');
+        const resultMedal = document.getElementById('result-medal');
+        const verseText = document.getElementById('verse-text');
+        const verseReference = document.getElementById('verse-reference');
+        
+        // Botões
+        const playBtn = document.getElementById('play-btn');
+        const rankingBtn = document.getElementById('ranking-btn');
+        const backBtn = document.getElementById('back-btn');
+        const continueBtn = document.getElementById('continue-btn');
+        const backToMap = document.getElementById('back-to-map');
+        
+        // Sons
+        const correctSound = document.getElementById('correct-sound');
+        const wrongSound = document.getElementById('wrong-sound');
+        const levelSound = document.getElementById('level-sound');
+        
+        // Dados do jogo
+        const gameData = {
+            currentLevel: 3,
+            playerScore: 1200,
+            quizScore: 850,
+            audioEnabled: true,
+            levels: [
+                { name: "Vale do Início", completed: true, score: 300 },
+                { name: "Floresta do Discernimento", completed: true, score: 350 },
+                { name: "Deserto da Fé", completed: false, score: 200 },
+                { name: "Montanha da Revelação", completed: false, score: 0 }
+            ],
+            currentQuiz: {
+                level: 3,
+                questions: [],
+                currentQuestion: 0,
+                score: 0,
+                correctAnswers: 0,
+                totalQuestions: 10,
+                recoveryMode: false
+            },
+            questions: [
+                // Nível 1: Vale do Início
+                {id: 1, level: 1, question: "Quem construiu a arca?", options: ["Noé", "Moisés", "Abraão", "Davi"], answer: 0, reference: "Gênesis 6:14", text: "Faze para ti uma arca de madeira de gofer..."},
+                {id: 2, level: 1, question: "Qual foi o primeiro homem criado por Deus?", options: ["Abel", "Adão", "Caim", "Set"], answer: 1, reference: "Gênesis 2:7", text: "E formou o Senhor Deus o homem do pó da terra..."},
+                {id: 3, level: 1, question: "Quem foi vendido por seus irmãos como escravo?", options: ["Isaque", "Jacó", "José", "Benjamin"], answer: 2, reference: "Gênesis 37:28", text: "Passando, pois, os mercadores midianitas, tiraram e alçaram a José da cova..."},
+                {id: 4, level: 1, question: "Quem foi o primeiro filho de Adão e Eva?", options: ["Caim", "Abel", "Set", "Enos"], answer: 0, reference: "Gênesis 4:1", text: "E conheceu Adão a Eva, sua mulher, e ela concebeu e deu à luz a Caim..."},
+                {id: 5, level: 1, question: "Quantos dias e noites choveu durante o dilúvio?", options: ["7 dias", "40 dias", "150 dias", "1 ano"], answer: 1, reference: "Gênesis 7:12", text: "E houve chuva sobre a terra quarenta dias e quarenta noites."},
+                
+                // Nível 2: Floresta do Discernimento
+                {id: 76, level: 2, question: "Quem foi o primeiro rei de Israel?", options: ["Davi", "Salomão", "Saul", "Josias"], answer: 2, reference: "1 Samuel 10:1", text: "Então Samuel tomou um vaso de azeite, e lho derramou sobre a cabeça..."},
+                {id: 77, level: 2, question: "Quem matou Golias?", options: ["Samuel", "Sansão", "Davi", "Jonatas"], answer: 2, reference: "1 Samuel 17:50", text: "Assim Davi prevaleceu contra o filisteu, com uma funda e com uma pedra..."},
+                {id: 78, level: 2, question: "Quem foi lançado na cova dos leões?", options: ["Jeremias", "Daniel", "Ezequiel", "Isaías"], answer: 1, reference: "Daniel 6:16", text: "Então o rei ordenou que trouxessem a Daniel, e o lançassem na cova dos leões..."},
+                {id: 79, level: 2, question: "Quem reconstruiu os muros de Jerusalém?", options: ["Esdras", "Neemias", "Zorobabel", "Ezequias"], answer: 1, reference: "Neemias 6:15", text: "Acabou-se, pois, o muro aos vinte e cinco do mês de elul, em cinquenta e dois dias."},
+                {id: 80, level: 2, question: "Quem foi o profeta que enfrentou os profetas de Baal?", options: ["Isaías", "Elias", "Jeremias", "Amós"], answer: 1, reference: "1 Reis 18:20-40", text: "Então Elias se chegou a todo o povo, e disse: Até quando coxeareis entre dois pensamentos?"},
+                
+                // Nível 3: Deserto da Fé (10 perguntas completas)
+                {id: 151, level: 3, question: "Quem batizou Jesus?", options: ["Pedro", "André", "João Batista", "Filipe"], answer: 2, reference: "Mateus 3:13", text: "Então veio Jesus da Galileia ter com João, junto do Jordão, para ser batizado por ele."},
+                {id: 152, level: 3, question: "Quantos discípulos Jesus enviou de dois em dois?", options: ["12 discípulos", "70 discípulos", "7 discípulos", "40 discípulos"], answer: 1, reference: "Lucas 10:1", text: "E depois disto designou o Senhor ainda outros setenta, e mandou-os adiante da sua face..."},
+                {id: 153, level: 3, question: "Quem negou Jesus três vezes?", options: ["Tomé", "Mateus", "Pedro", "Judas"], answer: 2, reference: "Mateus 26:75", text: "E lembrou-se Pedro das palavras de Jesus, que lhe dissera: Antes que o galo cante, três vezes me negarás."},
+                {id: 154, level: 3, question: "Qual foi o primeiro milagre de Jesus?", options: ["Cura do cego", "Ressurreição de Lázaro", "Transformação de água em vinho", "Caminhar sobre as águas"], answer: 2, reference: "João 2:11", text: "Jesus principiou assim os seus sinais em Caná da Galileia; e manifestou a sua glória..."},
+                {id: 155, level: 3, question: "Quem foi ressuscitado por Jesus após 4 dias morto?", options: ["A filha de Jairo", "O filho da viúva", "Lázaro", "Dionísio"], answer: 2, reference: "João 11:43-44", text: "E, tendo dito isso, clamou com grande voz: Lázaro, sai para fora. E o defunto saiu..."},
+                {id: 156, level: 3, question: "Qual apóstolo duvidou da ressurreição de Jesus?", options: ["Pedro", "Tomé", "João", "André"], answer: 1, reference: "João 20:24-29", text: "Disse-lhe Tomé: Senhor meu, e Deus meu! Então Jesus lhe disse: Porque me viste, Tomé, creste; bem-aventurados os que não viram e creram."},
+                {id: 157, level: 3, question: "Quantos pães e peixes Jesus usou para alimentar os 5.000?", options: ["3 pães e 2 peixes", "5 pães e 2 peixes", "7 pães e 3 peixes", "2 pães e 5 peixes"], answer: 1, reference: "Mateus 14:17", text: "Eles responderam: Não temos aqui senão cinco pães e dois peixes."},
+                {id: 158, level: 3, question: "Quem foi o discípulo que traiu Jesus?", options: ["Pedro", "Judas Iscariotes", "Tomé", "Filipe"], answer: 1, reference: "Mateus 26:14-16", text: "Então um dos doze, chamado Judas Iscariotes, foi ter com os principais sacerdotes, e disse: Que me quereis dar, e eu vo-lo entregarei?"},
+                {id: 159, level: 3, question: "Onde Jesus foi crucificado?", options: ["Monte Sinai", "Monte das Oliveiras", "Monte Calvário", "Monte Hermom"], answer: 2, reference: "João 19:17", text: "E, levando ele às costas a sua cruz, saiu para o lugar chamado Caveira, que em hebraico se chama Gólgota."},
+                {id: 160, level: 3, question: "Quem ajudou Jesus a carregar a cruz?", options: ["Simão de Cirene", "José de Arimateia", "Nicodemos", "Zaqueu"], answer: 0, reference: "Lucas 23:26", text: "E quando o levaram, tomaram um certo Simão, cireneu, que vinha do campo, e puseram-lhe a cruz às costas, para que a levasse após Jesus."}
+            ],
+            motivationalVerses: [
+                {
+                    level: 1,
+                    text: "No princípio, criou Deus os céus e a terra.",
+                    reference: "Gênesis 1:1"
+                },
+                {
+                    level: 2,
+                    text: "O temor do Senhor é o princípio da sabedoria.",
+                    reference: "Provérbios 9:10"
+                },
+                {
+                    level: 3,
+                    text: "Bem-aventurado o homem que suporta a provação; porque, depois de aprovado, receberá a coroa da vida.",
+                    reference: "Tiago 1:12"
+                },
+                {
+                    level: 4,
+                    text: "E vi um novo céu, e uma nova terra. Porque já o primeiro céu e a primeira terra passaram, e o mar já não existe.",
+                    reference: "Apocalipse 21:1"
+                }
+            ]
+        };
+
+        // Event Listeners
+        playBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            mapScreen.style.display = 'flex';
+        });
+        
+        rankingBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            rankingScreen.style.display = 'flex';
+        });
+        
+        document.querySelectorAll('.map-location').forEach((location, index) => {
+            location.addEventListener('click', () => {
+                if (index <= gameData.currentLevel - 1) {
+                    startQuiz(gameData.currentLevel);
+                }
+            });
+        });
+        
+        backBtn.addEventListener('click', () => {
+            quizScreen.style.display = 'none';
+            mapScreen.style.display = 'flex';
+        });
+        
+        submitBtn.addEventListener('click', checkAnswer);
+        
+        continueBtn.addEventListener('click', () => {
+            resultsScreen.style.display = 'none';
+            mapScreen.style.display = 'flex';
+        });
+        
+        backToMap.addEventListener('click', () => {
+            rankingScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+        });
+        
+        audioBtn.addEventListener('click', toggleAudio);
+        
+        // Funções do jogo
+        function startQuiz(level) {
+            // Filtrar perguntas para o nível atual
+            const levelQuestions = gameData.questions.filter(q => q.level === level);
+            
+            // Selecionar 10 perguntas aleatórias
+            const selectedQuestions = [];
+            const questionsToSelect = Math.min(10, levelQuestions.length);
+            
+            for (let i = 0; i < questionsToSelect; i++) {
+                const randomIndex = Math.floor(Math.random() * levelQuestions.length);
+                selectedQuestions.push(levelQuestions[randomIndex]);
+                levelQuestions.splice(randomIndex, 1);
+            }
+            
+            // Configurar o quiz atual
+            gameData.currentQuiz = {
+                level: level,
+                questions: selectedQuestions,
+                currentQuestion: 0,
+                score: 0,
+                correctAnswers: 0,
+                totalQuestions: questionsToSelect, // ATUALIZADO: Usar o número real de perguntas selecionadas
+                recoveryMode: false
+            };
+            
+            // Atualizar a interface
+            mapScreen.style.display = 'none';
+            quizScreen.style.display = 'flex';
+            loadQuestion();
+        }
+        
+        function loadQuestion() {
+            const quiz = gameData.currentQuiz;
+            const question = quiz.questions[quiz.currentQuestion];
+            
+            // Atualizar informações da pergunta
+            questionText.textContent = question.question;
+            levelInfo.textContent = `${getLevelName(quiz.level)} - Questão ${quiz.currentQuestion + 1}`;
+            questionCount.textContent = `${quiz.currentQuestion + 1}/${quiz.totalQuestions}`;
+            bibleReference.innerHTML = `"${question.text}"<br><strong>${question.reference}</strong>`;
+            
+            // Atualizar barra de progresso
+            const progress = ((quiz.currentQuestion) / quiz.totalQuestions) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Atualizar pontuação
+            quizScore.textContent = quiz.score;
+            
+            // Limpar opções anteriores
+            optionsContainer.innerHTML = '';
+            
+            // Adicionar novas opções
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.innerHTML = `
+                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                    <div class="option-text">${option}</div>
+                `;
+                optionElement.dataset.index = index;
+                optionElement.addEventListener('click', selectOption);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Resetar feedback
+            feedbackOverlay.style.opacity = '0';
+            feedbackOverlay.className = 'feedback-overlay';
+            submitBtn.disabled = true;
+        }
+        
+        function selectOption(event) {
+            // Remover seleção anterior
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Selecionar esta opção
+            event.currentTarget.classList.add('selected');
+            submitBtn.disabled = false;
+        }
+        
+        function checkAnswer() {
+            const quiz = gameData.currentQuiz;
+            const question = quiz.questions[quiz.currentQuestion];
+            const selectedOption = document.querySelector('.option.selected');
+            
+            if (!selectedOption) return;
+            
+            const selectedIndex = parseInt(selectedOption.dataset.index);
+            const isCorrect = selectedIndex === question.answer;
+            
+            // Pontos baseados no nível
+            let points = 100;
+            if (quiz.level === 4) points = 150;
+            if (quiz.level === 2) points = 80;
+            
+            // Atualizar pontuação
+            if (isCorrect) {
+                quiz.score += points;
+                quiz.correctAnswers++;
+                quizScore.textContent = quiz.score;
+                
+                // Feedback visual e sonoro
+                feedbackOverlay.className = 'feedback-overlay correct';
+                feedbackOverlay.innerHTML = '<i class="fas fa-check-circle"></i>';
+                playSound(correctSound);
+            } else {
+                // Feedback visual e sonoro
+                feedbackOverlay.className = 'feedback-overlay incorrect';
+                feedbackOverlay.innerHTML = '<i class="fas fa-times-circle"></i>';
+                playSound(wrongSound);
+            }
+            
+            // Mostrar feedback
+            feedbackOverlay.style.opacity = '1';
+            
+            // Marcar opções corretas e incorretas
+            document.querySelectorAll('.option').forEach((opt, index) => {
+                if (index === question.answer) {
+                    opt.classList.add('correct');
+                } else if (index === selectedIndex && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+            });
+            
+            // Desativar botão de confirmação
+            submitBtn.disabled = true;
+            
+            // Avançar para próxima pergunta após 2 segundos
+            setTimeout(() => {
+                quiz.currentQuestion++;
+                
+                if (quiz.currentQuestion < quiz.totalQuestions) {
+                    loadQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 2000);
+        }
+        
+        function finishQuiz() {
+            const quiz = gameData.currentQuiz;
+            const correctPercentage = (quiz.correctAnswers / quiz.totalQuestions) * 100;
+            
+            // Atualizar pontuação global
+            gameData.playerScore += quiz.score;
+            document.getElementById('player-score').textContent = gameData.playerScore;
+            
+            // Verificar se o jogador passou de nível
+            if (correctPercentage >= 70) {
+                // Passou de nível
+                resultTitle.textContent = "Fase Concluída!";
+                gameData.levels[quiz.level - 1].completed = true;
+                
+                // Atualizar medalha
+                if (correctPercentage >= 90) {
+                    resultMedal.className = 'medal gold';
+                } else if (correctPercentage >= 80) {
+                    resultMedal.className = 'medal silver';
+                } else {
+                    resultMedal.className = 'medal bronze';
+                }
+                
+                // Tocar som de vitória
+                playSound(levelSound);
+            } else {
+                // Não passou - modo de recuperação
+                resultTitle.textContent = "Prova de Recuperação";
+                resultMedal.className = 'medal';
+                resultMedal.innerHTML = '<i class="fas fa-redo"></i>';
+                quiz.recoveryMode = true;
+                
+                // Iniciar modo de recuperação
+                setTimeout(() => {
+                    startRecoveryMode();
+                }, 3000);
+                return;
+            }
+            
+            // Atualizar informações de resultado
+            resultScore.textContent = quiz.score;
+            resultCorrect.textContent = quiz.correctAnswers;
+            resultTotal.textContent = quiz.totalQuestions;
+            
+            // Exibir versículo motivacional
+            const verse = gameData.motivationalVerses[quiz.level - 1];
+            verseText.textContent = `"${verse.text}"`;
+            verseReference.textContent = verse.reference;
+            
+            // Mostrar tela de resultados
+            quizScreen.style.display = 'none';
+            resultsScreen.style.display = 'flex';
+        }
+        
+        function startRecoveryMode() {
+            const quiz = gameData.currentQuiz;
+            
+            // Selecionar 5 perguntas para recuperação
+            const levelQuestions = gameData.questions.filter(q => q.level === quiz.level);
+            const recoveryQuestions = [];
+            
+            for (let i = 0; i < 5; i++) {
+                const randomIndex = Math.floor(Math.random() * levelQuestions.length);
+                recoveryQuestions.push(levelQuestions[randomIndex]);
+                levelQuestions.splice(randomIndex, 1);
+            }
+            
+            // Configurar o quiz de recuperação
+            gameData.currentQuiz = {
+                level: quiz.level,
+                questions: recoveryQuestions,
+                currentQuestion: 0,
+                score: 0,
+                correctAnswers: 0,
+                totalQuestions: 5,
+                recoveryMode: true
+            };
+            
+            // Atualizar a interface
+            resultsScreen.style.display = 'none';
+            quizScreen.style.display = 'flex';
+            loadQuestion();
+        }
+        
+        function toggleAudio() {
+            gameData.audioEnabled = !gameData.audioEnabled;
+            audioBtn.innerHTML = gameData.audioEnabled ? 
+                '<i class="fas fa-volume-up"></i>' : 
+                '<i class="fas fa-volume-mute"></i>';
+        }
+        
+        function playSound(sound) {
+            if (gameData.audioEnabled) {
+                sound.currentTime = 0;
+                sound.play();
+            }
+        }
+        
+        function getLevelName(level) {
+            switch(level) {
+                case 1: return "Vale do Início";
+                case 2: return "Floresta do Discernimento";
+                case 3: return "Deserto da Fé";
+                case 4: return "Montanha da Revelação";
+                default: return "";
+            }
+        }
+        
+        // Inicializar dados do jogador
+        document.getElementById('player-score').textContent = gameData.playerScore;
+        document.getElementById('player-level').textContent = gameData.currentLevel;
+    </script>
+</body>
+</html>

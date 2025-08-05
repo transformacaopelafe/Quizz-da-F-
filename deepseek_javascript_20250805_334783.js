@@ -1,0 +1,1 @@
+const questionsToSelect = Math.min(10, levelQuestions.length);
